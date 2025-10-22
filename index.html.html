@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <style>
+    body { 
+      font-family: "Microsoft JhengHei", "微軟正黑體", sans-serif; 
+      margin: 0;
+      padding: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .container { 
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 20px;
+      table-layout: fixed;
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 4px;
+      text-align: center;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 標籤頁樣式 */
+    .tab-container {
+      margin-top: 20px;
+    }
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+    .tab-button {
+      padding: 8px 16px;
+      border: none;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .tab-button.active {
+      background-color: #FFD700;
+      color: #FF0000;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* 表格欄位寬度設置 */
+    .attendance-table th:nth-child(1), 
+    .attendance-table td:nth-child(1) {
+      width: 90px;  /* 刷卡日期 */
+    }
+    .attendance-table th:nth-child(2), 
+    .attendance-table td:nth-child(2) {
+      width: 40px;  /* 星期 */
+    }
+    .attendance-table th:nth-child(3), .attendance-table td:nth-child(3),
+    .attendance-table th:nth-child(4), .attendance-table td:nth-child(4),
+    .attendance-table th:nth-child(5), .attendance-table td:nth-child(5),
+    .attendance-table th:nth-child(6), .attendance-table td:nth-child(6) {
+      width: 60px;  /* 刷卡時間，縮小寬度 */
+    }
+    .attendance-table th:nth-child(7), 
+    .attendance-table td:nth-child(7) {
+      width: 100px;  /* 班別 */
+    }
+    .attendance-table th:nth-child(8), 
+    .attendance-table td:nth-child(8) {
+      width: 80px;  /* 異常狀態 */
+    }
+    /* 加班費申請表樣式 */
+    .overtime-table {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .overtime-table th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+      padding: 8px;
+    }
+    .overtime-table td {
+      padding: 6px;
+      vertical-align: middle;
+    }
+    .overtime-table .section-header {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .overtime-table input[type="text"] {
+      width: 95%;
+      padding: 4px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+    .overtime-table .readonly {
+      background-color: #f8f8f8;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    td input[type="text"],
+    td select {
+      width: 95%;
+      padding: 2px;
+      font-size: 12px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .input-group { 
+      margin-bottom: 20px; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    .input-group label {
+      margin-right: 5px;
+      font-size: 14px;
+    }
+    .input-group input {
+      padding: 4px;
+      margin-right: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .emp-name {
+      padding: 4px 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .weekend {
+      background-color: #f5f5f5;
+    }
+    .save-container {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .save-btn {
+      background-color: #FFD700;
+      color: #FF0000;
+      font-size: 16px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .save-btn:hover {
+      background-color: #FFA500;
+      transform: scale(1.05);
+    }
+    .save-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .save-status {
+      font-size: 14px;
+      min-width: 100px;
+      text-align: left;
+      padding: 5px 10px;
+      border-radius: 4px;
+      background-color: #f5f5f5;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .save-status.show {
+      opacity: 1;
+    }
+    .save-status.saving {
+      color: #FFA500;
+      background-color: #FFF3E0;
+    }
+    .save-status.success {
+      color: #4CAF50;
+      background-color: #E8F5E9;
+    }
+    .save-status.error {
+      color: #FF0000;
+      background-color: #FFEBEE;
+    }
+    .hidden {
+      display: none;
+    }
+    .total-row {
+      font-weight: bold;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+    .work-type {
+      width: 100%;
+      padding: 2px;
+      font-size: 12px;
+      text-align: center;
+    }
+    h3 {
+      text-align: center;
+    }
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+    
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+    }
+    
+    .tab button:hover {
+      background-color: #ddd;
+    }
+    
+    .tab button.active {
+      background-color: #ccc;
+    }
+    
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+    
+    #imageContainer img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    .schedule-table td,
+    .schedule-table th {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      /* 允許內容換行 */
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    .schedule-table thead tr {
+      background-color: #4a90e2;  /* 深藍色表頭 */
+      color: white;  /* 白色文字 */
+      font-weight: bold;
+    }
+
+    /* 為B-E列（索引0-3）添加背景色 */
+    .schedule-table td:nth-child(-n+4) {
+      background-color: #e3f2fd;  /* 更柔和的淺藍色 */
+      /* 設定最小寬度，避免內容擠壓 */
+      min-width: 80px;
+    }
+    
+    /* 為F-G列（索引4-5）添加不同的背景色 */
+    .schedule-table td:nth-child(n+5) {
+      background-color: #fce4ec;  /* 更柔和的淺粉色 */
+      /* 規則和說明欄位需要更寬的空間 */
+      min-width: 120px;
+    }
+
+    /* 特別處理說明欄位（最後一列），給予更多空間 */
+    .schedule-table td:last-child {
+      min-width: 200px;
+    }
+
+    /* 為表格添加hover效果 */
+    .schedule-table tbody tr:hover td {
+      background-color: #f5f5f5;  /* 滑鼠懸停時的背景色 */
+    }
+
+    /* 添加響應式設計 */
+    @media screen and (max-width: 1400px) {
+      .container {
+        width: 100%;
+        padding: 10px;
+        overflow-x: auto;
+      }
+      
+      #recordTable {
+        min-width: 1200px;
+      }
+      
+      /* 固定重要欄位 */
+      .attendance-table th:nth-child(-n+2),
+      .attendance-table td:nth-child(-n+2) {
+        position: sticky;
+        left: 0;
+        background-color: #fff;
+        z-index: 1;
+      }
+      
+      .attendance-table th:nth-child(2),
+      .attendance-table td:nth-child(2) {
+        left: 90px;
+      }
+    }
+
+    /* 平板設備優化 */
+    @media screen and (max-width: 1024px) {
+      body {
+        font-size: 13px;
+      }
+      
+      .input-group {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .input-group input,
+      .input-group button {
+        padding: 8px;
+        font-size: 13px;
+      }
+      
+      .tab-button {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      /* 調整表格內容大小 */
+      th, td {
+        padding: 3px;
+        font-size: 11px;
+      }
+      
+      td input[type="text"],
+      td select {
+        padding: 1px;
+        font-size: 11px;
+      }
+    }
+
+    /* 手機設備優化 */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px;
+        font-size: 12px;
+      }
+      
+      .container {
+        padding: 5px;
+      }
+      
+      /* 搜尋區塊垂直排列 */
+      .input-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+      }
+      
+      .input-group label {
+        margin-bottom: 2px;
+      }
+      
+      .input-group input,
+      .input-group button {
+        width: 100%;
+        margin: 0;
+        padding: 6px;
+      }
+      
+      /* 標籤頁按鈕優化 */
+      .tab-buttons {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      
+      .tab-button {
+        flex: 1;
+        min-width: 100px;
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+      
+      /* 儲存按鈕區域優化 */
+      .save-container {
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      .save-btn {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+      }
+      
+      .save-status {
+        width: 100%;
+        text-align: center;
+      }
+      
+      /* 加班費申請單表格優化 */
+      .overtime-table {
+        font-size: 11px;
+      }
+      
+      .overtime-table th,
+      .overtime-table td {
+        padding: 4px;
+      }
+      
+      /* 說明頁面表格優化 */
+      .schedule-table {
+        font-size: 11px;
+      }
+      
+      .schedule-table td,
+      .schedule-table th {
+        padding: 4px;
+      }
+    }
+
+    /* 觸控設備優化 */
+    @media (hover: none) and (pointer: coarse) {
+      /* 增加點擊區域 */
+      td input[type="text"],
+      td select,
+      button {
+        min-height: 36px;
+      }
+      
+      /* 增加間距避免誤觸 */
+      th, td {
+        padding: 6px 4px;
+      }
+      
+      /* 下拉選單優化 */
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333'%3E%3Cpath d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 4px center;
+        padding-right: 20px;
+      }
+    }
+
+    /* 深色模式支援 */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1a1a1a;
+        color: #fff;
+      }
+      
+      table, th, td {
+        border-color: #444;
+      }
+      
+      input, select, button {
+        background-color: #333;
+        color: #fff;
+        border-color: #555;
+      }
+      
+      .weekend {
+        background-color: #2a2a2a;
+      }
+      
+      .save-status.success {
+        background-color: #1b5e20;
+      }
+      
+      .save-status.error {
+        background-color: #b71c1c;
+      }
+    }
+
+    /* 桌面版樣式 */
+    @media screen and (min-width: 1025px) {
+      table {
+        font-size: 14px;
+      }
+      
+      th, td {
+        padding: 8px;
+      }
+      
+      .input-group {
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="input-group">
+      <label for="empId">請輸入員工編號：</label>
+      <input type="text" id="empId" onchange="updateEmpName()" />
+      <span id="empName" class="emp-name"></span>
+      <button onclick="searchEmployee()">查詢</button>
+    </div>
+    
+    <div id="resultSection" class="hidden">
+      <!-- 標籤頁按鈕 -->
+      <div class="tab-buttons">
+        <button class="tab-button active" onclick="switchTab('attendance')">打卡記錄</button>
+        <button class="tab-button" onclick="switchTab('overtime')">加班費申請單</button>
+        <button class="tab-button" onclick="switchTab('schedule')">說明</button>
+      </div>
+
+      <!-- 打卡記錄頁面 -->
+      <div id="attendanceTab" class="tab-content active">
+        <h3>打卡記錄</h3>
+        <div class="table-container">
+          <table id="recordTable" class="attendance-table">
+            <thead>
+              <tr>
+                <th>刷卡日期</th>
+                <th>星期</th>
+                <th>刷卡3</th>
+                <th>刷卡4</th>
+                <th>刷卡5</th>
+                <th>刷卡6</th>
+                <th>班別</th>
+                <th>異常狀態</th>
+                <th>加班時數</th>
+                <th>加班補償</th>
+                <th>請假時數</th>
+                <th>工時代號</th>
+                <th>上班</th>
+                <th>下班</th>
+                <th>時數</th>
+              </tr>
+            </thead>
+            <tbody id="recordBody"></tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="8" style="text-align: right">總計：</td>
+                <td id="totalOvertimeHours">0</td>
+                <td colspan="5"></td>
+                <td id="totalWorkHours">0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="save-container">
+          <button onclick="saveData()" class="save-btn">儲存資料</button>
+          <span class="save-status" id="attendanceSaveStatus"></span>
+        </div>
+      </div>
+
+      <!-- 加班費申請單頁面 -->
+      <div id="overtimeTab" class="tab-content">
+        <h3>加班費申請單</h3>
+        <table id="overtimeTable" class="overtime-table">
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>內容</th>
+              <th>數值/資料</th>
+            </tr>
+          </thead>
+          <tbody id="overtimeBody"></tbody>
+        </table>
+        <div class="save-container">
+          <button onclick="saveData()" class="save-btn">儲存資料</button>
+          <span class="save-status" id="overtimeSaveStatus"></span>
+        </div>
+      </div>
+
+      <!-- 說明頁面 -->
+      <div id="scheduleTab" class="tab-content">
+        <h3>說明</h3>
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>日期區間</th>
+              <th>四週工時</th>
+              <th>國定假日</th>
+              <th>假日</th>
+              <th>規則</th>
+              <th>說明</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody">
+            <!-- 這裡將通過JavaScript填充說明數據 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 定義津貼金額常數
+    const ALLOWANCE_RATES = {
+      '夜診18:00-21:00': 400,
+      '夜診18:00-21:30': 400,
+      '夜診18:00-22:00': 400,
+      '小夜半': 300,
+      '小小班': 300,
+      '小夜全': 600,
+      '大夜(8+4)': 700,
+      '大夜(10+2)': 800
+    };
+    
+    // 定義初始數據結構
+    const INITIAL_OVERTIME_DATA = {
+      shiftDates: {},
+      employeeName: '',
+      saturdayData: Array(5).fill(null),
+      timeData: {}
+    };
+    
+    let currentEmpName = '';
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+      });
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+
+      // 控制儲存按鈕的顯示
+      const saveContainers = document.querySelectorAll('.save-container');
+      if (tabName === 'schedule') {  // 說明頁不顯示儲存按鈕
+        saveContainers.forEach(container => container.style.display = 'none');
+        // 加載說明數據
+        google.script.run
+          .withSuccessHandler(function(data) {
+            console.log('成功獲取說明數據:', data);
+            displaySchedule(data);
+          })
+          .withFailureHandler(function(error) {
+            console.error('獲取說明數據失敗:', error);
+            document.getElementById('scheduleBody').innerHTML = 
+              `<tr><td colspan="6" style="color: red;">獲取數據失敗: ${error.message}</td></tr>`;
+          })
+          .getScheduleData();
+      } else if (tabName === 'attendance' || tabName === 'overtime') {
+        saveContainers.forEach(container => container.style.display = 'block');
+      } else {
+        saveContainers.forEach(container => container.style.display = 'none');
+      }
+    }
+
+    function updateEmpName() {
+      const empId = document.getElementById('empId').value.trim().toUpperCase();
+      if (!empId) {
+        document.getElementById('empName').textContent = '';
+        return;
+      }
+      
+      console.log('开始查询员工:', empId);
+      
+      google.script.run
+        .withSuccessHandler(function(data) {
+          console.log('收到员工数据:', data);
+          if (data && data.attendance && data.attendance.length > 0) {
+            currentEmpName = data.attendance[0].emp_name;
+            document.getElementById('empName').textContent = currentEmpName;
+            // 显示结果区域
+            document.getElementById('resultSection').classList.remove('hidden');
+          } else {
+            document.getElementById('empName').textContent = '查無此員工';
+            // 隐藏结果区域
+            document.getElementById('resultSection').classList.add('hidden');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('查询失败:', error);
+          document.getElementById('empName').textContent = '查詢失敗: ' + error.message;
+          // 隐藏结果区域
+          document.getElementById('resultSection').classList.add('hidden');
+        })
+        .getEmployeeData(empId);
+    }
+
+    function searchEmployee() {
+      const empId = document.getElementById('empId').value.trim().toUpperCase();
+      
+      if (!empId) {
+        alert('請輸入員工編號');
+        return;
+      }
+
+      console.log('开始搜索员工:', empId);
+      
+      document.getElementById('resultSection').classList.remove('hidden');
+      document.getElementById('recordBody').innerHTML = '<tr><td colspan="14">資料載入中...</td></tr>';
+      document.getElementById('overtimeBody').innerHTML = '<tr><td colspan="3">資料載入中...</td></tr>';
+      
+      // 重置加班費申請單
+      displayOvertimeData(INITIAL_OVERTIME_DATA);
+      
+      google.script.run
+        .withSuccessHandler(function(response) {
+          console.log('收到搜索响应:', response);
+          if (!response || !response.attendance) {
+            console.error('响应数据格式错误:', response);
+            document.getElementById('recordBody').innerHTML = 
+              '<tr><td colspan="14" style="color: red;">查無資料</td></tr>';
+            document.getElementById('overtimeBody').innerHTML = 
+              '<tr><td colspan="3" style="color: red;">查無資料</td></tr>';
+            return;
+          }
+          
+          console.log('显示打卡记录数据:', response.attendance);
+          displayAttendanceData(response.attendance);
+          
+          // 這裡直接用 response.overtime
+          displayOvertimeData(response.overtime);
+        })
+        .withFailureHandler(function(error) {
+          console.error('搜索失败:', error);
+          document.getElementById('recordBody').innerHTML = 
+            `<tr><td colspan="14" style="color: red;">查詢失敗：${error.message}</td></tr>`;
+          document.getElementById('overtimeBody').innerHTML = 
+            `<tr><td colspan="3" style="color: red;">查詢失敗：${error.message}</td></tr>`;
+        })
+        .getEmployeeData(empId);
+    }
+
+    function displayAttendanceData(records) {
+      console.log('顯示打卡記錄:', records);
+      const tbody = document.getElementById('recordBody');
+      tbody.innerHTML = '';
+
+      // 添加時間處理函數
+      function adjustTime(timeStr) {
+        if (!timeStr || timeStr.trim() === '') return '';
+        
+        // 檢查時間格式是否正確
+        if (!timeStr.includes(':')) return timeStr;
+        
+        try {
+          const [hours, minutes] = timeStr.split(':').map(num => parseInt(num, 10));
+          
+          // 檢查是否為有效數字
+          if (isNaN(hours) || isNaN(minutes)) return timeStr;
+          
+          //let newMinutes = minutes - 23;
+          let newMinutes = minutes;
+          let newHours = hours;
+          
+          if (newMinutes < 0) {
+            newMinutes += 60;
+            newHours -= 1;
+          }
+          if (newHours < 0) {
+            newHours += 24;
+          }
+          
+          return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+        } catch (error) {
+          console.error('時間處理錯誤:', error);
+          return timeStr;
+        }
+      }
+
+      // 初始化加班費申請單數據結構
+      const overtimeData = {
+        shiftDates: {},
+        employeeName: records[0]?.emp_name || '',
+        saturdayData: Array(5).fill(null).map(() => ({ date: '', time: '' })),
+        timeData: {}
+      };
+
+      records.forEach(record => {
+        const tr = document.createElement('tr');
+        const isWeekend = record.weekday === '六' || record.weekday === '日';
+        if (isWeekend) {
+          tr.classList.add('weekend');
+        }
+
+        // 判斷是否為休假（所有刷卡時間為空）
+        const isAllPunchEmpty = !record.punch3 && !record.punch4 && !record.punch5 && !record.punch6;
+        
+        tr.innerHTML = `
+          <td>${record.date}</td>
+          <td>${record.weekday}</td>
+          <td>${adjustTime(record.punch3)}</td>
+          <td>${adjustTime(record.punch4)}</td>
+          <td>${adjustTime(record.punch5)}</td>
+          <td>${adjustTime(record.punch6)}</td>
+          <td></td>
+          <td></td>
+          <td><input type="text" class="overtime-hours" data-date="${record.date}" value="${record.overtimeHours}" onchange="updateTotalHours()"></td>
+          <td></td>
+          <td><input type="text" class="leave-hours" data-date="${record.date}" value="${record.leaveHours}"></td>
+          <td>${record.timeCode}</td>
+          <td>${adjustTime(record.startTime)}</td>
+          <td>${adjustTime(record.endTime)}</td>
+          <td class="hours-column">${record.hours}</td>
+        `;
+
+        // 保存原始 RSTU 值到 data 屬性
+        tr.children[11].setAttribute('data-original-timeCode', record.originalTimeCode);
+        tr.children[12].setAttribute('data-original-startTime', record.originalStartTime);
+        tr.children[13].setAttribute('data-original-endTime', record.originalEndTime);
+        tr.children[14].setAttribute('data-original-hours', record.originalHours);
+
+        // 創建並添加班別選擇下拉選單
+        const workTypeSelect = createWorkTypeSelect(record.workType, record.date);
+        workTypeSelect.dataset.date = record.date;
+        tr.children[6].appendChild(workTypeSelect);
+
+        // 創建並添加異常狀態選擇下拉選單
+        const statusSelect = createStatusSelect(record.status, record.date);
+        tr.children[7].appendChild(statusSelect);
+
+        // 創建並添加加班補償選擇下拉選單
+        const compensationSelect = createCompensationTypeSelect(record.compensationType);
+        tr.children[9].appendChild(compensationSelect);
+        
+        tbody.appendChild(tr);
+
+        // 收集加班費申請單數據
+        if (record.workType && record.compensationType === '加班費') {
+          if (record.workType === '週六(休假日)' && record.weekday === '六') {
+            const day = record.date.split('-')[2];
+            const weekIndex = Math.floor((parseInt(day) - 1) / 7);
+            if (weekIndex >= 0 && weekIndex < 5) {
+              overtimeData.saturdayData[weekIndex] = {
+                date: day,
+                time: record.overtimeTime || ''
+              };
+            }
+          } else if (ALLOWANCE_RATES[record.workType]) {
+            if (!overtimeData.shiftDates[record.workType]) {
+              overtimeData.shiftDates[record.workType] = [];
+            }
+            const day = record.date.split('-')[2];
+            if (!overtimeData.shiftDates[record.workType].includes(day)) {
+              overtimeData.shiftDates[record.workType].push(day);
+            }
+            if (record.overtimeTime) {
+              overtimeData.timeData[record.workType] = record.overtimeTime;
+            }
+          }
+        }
+      });
+
+      updateTotalHours();
+      // 顯示加班費申請單
+      displayOvertimeData(overtimeData);
+    }
+
+    function displayOvertimeData(data) {
+      console.log('顯示加班費申請單資料:', data);
+      const tbody = document.getElementById('overtimeBody');
+      
+      // 確保data物件存在且具有必要的屬性
+      if (!data) {
+        tbody.innerHTML = '<tr><td colspan="3" style="color: red;">無法顯示加班費申請單：資料格式錯誤</td></tr>';
+        return;
+      }
+      
+      // 確保shiftDates存在
+      const shiftDates = data.shiftDates || {};
+      
+      tbody.innerHTML = '';
+      
+      // 添加表頭
+      const headerTr = document.createElement('tr');
+      headerTr.innerHTML = `
+        <td colspan="3">
+          <h4 style="margin: 10px 0; text-align: center;">津貼明細表</h4>
+        </td>
+      `;
+      tbody.appendChild(headerTr);
+      
+      // 添加津貼明細表
+      const summaryTr = document.createElement('tr');
+      summaryTr.innerHTML = `
+        <td colspan="3">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #FFF9C4;">
+              <th style="width: 40%; text-align: center; border: 1px solid #ddd; padding: 6px;">項目</th>
+              <th style="width: 20%; text-align: center; border: 1px solid #ddd; padding: 6px;">天數</th>
+              <th style="width: 20%; text-align: center; border: 1px solid #ddd; padding: 6px;">單價</th>
+              <th style="width: 20%; text-align: center; border: 1px solid #ddd; padding: 6px;">金額</th>
+            </tr>
+            ${generateAllowanceRows(shiftDates)}
+            <tr style="background-color: #FFE0B2; font-weight: bold;">
+              <td style="border: 1px solid #ddd; padding: 6px;">總計</td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${calculateTotalDays(shiftDates)}</td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;"></td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${calculateTotalAllowance(shiftDates).toLocaleString()}</td>
+            </tr>
+          </table>
+        </td>
+      `;
+      tbody.appendChild(summaryTr);
+      
+      // 添加分隔行
+      const separatorTr = document.createElement('tr');
+      separatorTr.innerHTML = '<td colspan="3" style="height: 30px;"></td>';
+      tbody.appendChild(separatorTr);
+      
+      // 添加加班費申請單標題
+      const applicationHeaderTr = document.createElement('tr');
+      applicationHeaderTr.innerHTML = `
+        <td colspan="3">
+          <h4 style="margin: 10px 0; text-align: center;">加班費申請單</h4>
+        </td>
+      `;
+      tbody.appendChild(applicationHeaderTr);
+      
+      // 添加加班費申請單表頭
+      const applicationTableHeaderTr = document.createElement('tr');
+      applicationTableHeaderTr.innerHTML = `
+        <th style="width: 30%; text-align: center; background-color: #f5f5f5;">項目</th>
+        <th style="width: 30%; text-align: center; background-color: #f5f5f5;">內容</th>
+        <th style="width: 40%; text-align: center; background-color: #f5f5f5;">數值/資料</th>
+      `;
+      tbody.appendChild(applicationTableHeaderTr);
+
+      const shiftGroups = [
+        {
+          title: '夜診組',
+          color: '#E3F2FD',
+          shifts: ['夜診18:00-21:00', '夜診18:00-21:30', '夜診18:00-22:00'],
+          fields: ['天數', '日期']
+        },
+        {
+          title: '週六組',
+          color: '#F3E5F5',
+          shifts: ['週六(休假日)'],
+          fields: ['週次', '日期', '時間'],
+          weekCount: 5,
+          hasTimeInput: true
+        },
+        {
+          title: '小夜組',
+          color: '#FFF3E0',
+          shifts: ['小夜半', '小小班', '小夜全'],
+          fields: ['天數', '日期', '時間'],
+          hasTimeInput: true,
+          timeInputShifts: ['小夜半']
+        },
+        {
+          title: '大夜組',
+          color: '#E8F5E9',
+          shifts: ['大夜(8+4)', '大夜(10+2)'],
+          fields: ['天數', '日期', '時間'],
+          hasTimeInput: true
+        }
+      ];
+      
+      // 顯示各組資料
+      shiftGroups.forEach((group, groupIndex) => {
+        // 添加組標題
+        const titleTr = document.createElement('tr');
+        titleTr.style.backgroundColor = group.color;
+        titleTr.style.borderTop = groupIndex > 0 ? '2px solid #666' : '';
+        titleTr.innerHTML = `
+          <td colspan="3" style="font-weight: bold; padding: 8px">
+            ${group.title}
+          </td>
+        `;
+        tbody.appendChild(titleTr);
+        
+        // 顯示該組的每個班別資料
+        group.shifts.forEach(shiftType => {
+          const dates = shiftDates[shiftType] || [];
+          const sortedDates = [...dates].sort((a, b) => parseInt(a) - parseInt(b));
+          
+          if (group.weekCount) {
+            // 週六組顯示5個週次
+            for (let i = 0; i < group.weekCount; i++) {
+              const weekData = data.saturdayData[i] || { date: '', time: '' };
+              const weekTr = document.createElement('tr');
+              weekTr.style.backgroundColor = group.color;
+              weekTr.innerHTML = `
+                <td>${shiftType}</td>
+                <td>第${i + 1}週</td>
+                <td style="text-align: right; padding-right: 10px;">
+                  <input type="text" style="width: 80px" value="${weekData.date}" placeholder="日期">
+                  <input type="text" style="width: 120px" value="${weekData.time}" placeholder="請輸入時間">
+                </td>
+              `;
+              tbody.appendChild(weekTr);
+            }
+          } else {
+            // 其他組別顯示天數、日期和時間
+            group.fields.forEach(field => {
+              if (field === '時間' && group.timeInputShifts && !group.timeInputShifts.includes(shiftType)) {
+                return;
+              }
+
+              const tr = document.createElement('tr');
+              tr.style.backgroundColor = group.color;
+              
+              let content = '';
+              if (field === '天數') {
+                content = dates.length;
+              } else if (field === '日期') {
+                content = sortedDates.join(', ');
+              } else if (field === '時間' && group.hasTimeInput && 
+                        (!group.timeInputShifts || group.timeInputShifts.includes(shiftType))) {
+                // 從 data.timeData 中獲取已保存的時間值
+                const timeValue = data.timeData?.[shiftType] || '';
+                content = `<input type="text" style="width: 80%" value="${timeValue}" placeholder="請輸入時間" class="time-input" data-shift-type="${shiftType}">`;
+              }
+              
+              tr.innerHTML = `
+                <td>${shiftType}</td>
+                <td>${field}</td>
+                <td style="text-align: right; padding-right: 10px;">${content}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        });
+      });
+
+      // 為週六組添加時間輸入事件監聽器
+      document.querySelectorAll('#overtimeBody input[type="text"]').forEach(input => {
+        input.onchange = function() {
+          const shiftType = this.getAttribute('data-shift-type');
+          if (shiftType) {
+            // 更新 timeData
+            if (!data.timeData) data.timeData = {};
+            data.timeData[shiftType] = this.value;
+          }
+        };
+      });
+    }
+
+    // 生成津貼明細表的行
+    function generateAllowanceRows(shiftDates) {
+      const rates = {
+        '夜診18:00-21:00': 400,
+        '夜診18:00-21:30': 400,
+        '夜診18:00-22:00': 400,
+        '小夜半': 300,
+        '小小班': 300,
+        '小夜全': 600,
+        '大夜(8+4)': 700,
+        '大夜(10+2)': 800
+      };
+      
+      return Object.entries(rates)
+        .map(([shiftType, rate]) => {
+          const days = (shiftDates[shiftType] || []).length;
+          const amount = days * rate;
+          return `
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 6px;">${shiftType}</td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${days}</td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${rate}</td>
+              <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${amount.toLocaleString()}</td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    function createWorkTypeSelect(currentValue, date) {
+      const select = document.createElement('select');
+      select.className = 'work-type';
+      select.setAttribute('data-original-value', currentValue);
+      select.setAttribute('data-date', date);
+      
+      // 添加班別對應的工時代號和時間
+      const workTypeMapping = {
+        '小夜半': {
+          timeCode: 'D113',
+          startTime: '11:30',
+          endTime: '20:00',
+          hours: '8.0'
+        },
+        '小夜全': {
+          timeCode: 'D113',
+          startTime: '11:30',
+          endTime: '20:00',
+          hours: '8.0'
+        },
+        '小小班': {
+          timeCode: 'D419',
+          startTime: '10:30',
+          endTime: '19:00',
+          hours: '8.0'
+        },
+        '大夜(8+4)': {
+          timeCode: 'N036',
+          startTime: '22:00',
+          endTime: '08:00',
+          hours: '8.0'
+        },
+        '大夜(10+2)': {
+          timeCode: 'N034',
+          startTime: '00:00',
+          endTime: '08:00',
+          hours: '8.0'
+        },
+        '九點門診': {
+          timeCode: 'D156',
+          startTime: '09:00',
+          endTime: '17:30',
+          hours: '8.0'
+        },
+        '八點門診': {
+          timeCode: 'D001',
+          startTime: '08:00',
+          endTime: '17:00',
+          hours: '8.0'
+        }
+      };
+      
+      const options = [
+        '',  // 空白選項
+        '夜診18:00-21:00',
+        '夜診18:00-21:30',
+        '夜診18:00-22:00',
+        '週六(休假日)',
+        '小夜半',
+        '小小班',
+        '小夜全',
+        '大夜(8+4)',
+        '大夜(10+2)',
+        '九點門診',
+        '八點門診',
+        '臨時支援'
+      ];
+      
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.text = opt || '';
+        select.appendChild(option);
+      });
+      
+      if (currentValue && !options.includes(currentValue)) {
+        const option = document.createElement('option');
+        option.value = currentValue;
+        option.text = currentValue;
+        select.appendChild(option);
+      }
+      
+      select.value = currentValue || '';
+      
+      select.onchange = function() {
+        const row = this.closest('tr');
+        const selectedWorkType = this.value;
+        
+        // 如果是第一次選擇，保存原始值
+        if (!row.dataset.originalTimeCode) {
+          row.dataset.originalTimeCode = row.cells[11].textContent;
+          row.dataset.originalStartTime = row.cells[12].textContent;
+          row.dataset.originalEndTime = row.cells[13].textContent;
+          row.dataset.originalHours = row.cells[14].textContent;
+        }
+
+        if (selectedWorkType === '') {
+          // 當選擇空白時，恢復原始值
+          row.cells[11].textContent = row.dataset.originalTimeCode || '';
+          row.cells[12].textContent = row.dataset.originalStartTime || '';
+          row.cells[13].textContent = row.dataset.originalEndTime || '';
+          row.cells[14].textContent = row.dataset.originalHours || '';
+          
+          // 清除實際值
+          delete row.dataset.actualTimeCode;
+          delete row.dataset.actualStartTime;
+          delete row.dataset.actualEndTime;
+          delete row.dataset.actualHours;
+        } else if (selectedWorkType === '其他') {
+          const dateStr = this.getAttribute('data-date');
+          const input = prompt(`請輸入 ${dateStr} 的工作說明：`);
+          if (input) {
+            const option = document.createElement('option');
+            option.value = input;
+            option.text = input;
+            this.add(option);
+            this.value = input;
+          } else {
+            this.value = '';
+            // 恢復原始值
+            row.cells[11].textContent = row.dataset.originalTimeCode || '';
+            row.cells[12].textContent = row.dataset.originalStartTime || '';
+            row.cells[13].textContent = row.dataset.originalEndTime || '';
+            row.cells[14].textContent = row.dataset.originalHours || '';
+          }
+        } else {
+          // 對於夜診和週六(休假日)，保持原始值
+          if (['夜診18:00-21:00', '夜診18:00-21:30', '夜診18:00-22:00', '週六(休假日)'].includes(selectedWorkType)) {
+            // 使用原始值
+            row.cells[11].textContent = row.dataset.originalTimeCode || '';
+            row.cells[12].textContent = row.dataset.originalStartTime || '';
+            row.cells[13].textContent = row.dataset.originalEndTime || '';
+            row.cells[14].textContent = row.dataset.originalHours || '';
+          } else {
+            // 其他班別使用 mapping 中的值
+            const mapping = workTypeMapping[selectedWorkType];
+            if (mapping) {
+              row.cells[11].textContent = mapping.timeCode;
+              row.cells[12].textContent = mapping.startTime;
+              row.cells[13].textContent = mapping.endTime;
+              row.cells[14].textContent = mapping.hours;
+              
+              // 儲存實際值到 dataset 中
+              row.dataset.actualTimeCode = mapping.timeCode;
+              row.dataset.actualStartTime = mapping.startTime;
+              row.dataset.actualEndTime = mapping.endTime;
+              row.dataset.actualHours = mapping.hours;
+            }
+          }
+        }
+        
+        updateTotalHours();
+        updateOvertimeDisplay();
+      };
+      
+      return select;
+    }
+
+    function createStatusSelect(currentValue, date) {
+      const select = document.createElement('select');
+      select.className = 'status-type';
+      select.setAttribute('data-date', date);
+      
+      const options = [
+        '',  // 空白選項
+        '遲到',
+        '忘記打卡',
+        '特休',
+        '請假',
+        '其他'
+      ];
+      
+      options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.text = opt || '';
+        select.appendChild(option);
+      });
+      
+      select.value = currentValue || '';
+      
+      select.onchange = function() {
+        if (this.value === '其他') {
+          const dateStr = this.getAttribute('data-date');
+          const input = prompt(`請輸入 ${dateStr} 的異常狀態說明：`);
+          if (input) {
+            const option = document.createElement('option');
+            option.value = input;
+            option.text = input;
+            this.add(option);
+            this.value = input;
+          } else {
+            this.value = '';
+          }
+        }
+      };
+      
+      return select;
+    }
+
+    function createCompensationTypeSelect(currentValue) {
+      const select = document.createElement('select');
+      select.className = 'compensation-type';
+      select.innerHTML = `
+        <option value=""></option>
+        <option value="加班費" ${currentValue === '加班費' ? 'selected' : ''}>加班費</option>
+        <option value="補休" ${currentValue === '補休' ? 'selected' : ''}>補休</option>
+      `;
+      
+      select.onchange = function() {
+        updateOvertimeDisplay();
+      };
+      
+      return select;
+    }
+
+    function updateOvertimeDisplay() {
+      console.log('更新加班費申請單顯示');
+      const shiftDates = {};
+      const saturdayData = Array(5).fill(null).map(() => ({ date: '', time: '' }));
+      let saturdayDates = [];  // 用于存储所有周六的日期
+      
+      // 首先收集所有周六的日期
+      document.querySelectorAll('#recordBody tr').forEach(row => {
+        const date = row.cells[0].textContent;
+        const weekday = row.cells[1].textContent;
+        const workType = row.querySelector('.work-type')?.value;
+        const compensationType = row.querySelector('.compensation-type')?.value;
+        
+        // 收集所有周六的日期
+        if (weekday === '六' && workType === '週六(休假日)' && compensationType === '加班費') {
+          // 只取日期的日數部分
+          const day = date.split('-')[2];
+          saturdayDates.push(day);
+        }
+        
+        // 处理其他班别数据
+        if (ALLOWANCE_RATES[workType] && compensationType === '加班費' && workType !== '週六(休假日)') {
+          if (!shiftDates[workType]) {
+            shiftDates[workType] = [];
+          }
+          const day = date.split('-')[2];
+          if (!shiftDates[workType].includes(day)) {
+            shiftDates[workType].push(day);
+          }
+        }
+      });
+      
+      // 对周六日期进行排序
+      saturdayDates.sort((a, b) => parseInt(a) - parseInt(b));
+      
+      // 将排序后的周六数据按顺序填入 saturdayData
+      saturdayDates.forEach((date, index) => {
+        if (index < 5) {  // 最多处理5个周六
+          saturdayData[index] = {
+            date: date, // 只使用日期部分
+            time: '' // 时间需要手动填写
+          };
+        }
+      });
+      
+      console.log('收集到的班別資料:', { shiftDates, saturdayData });
+      
+      // 更新加班费申请单显示
+      displayOvertimeData({ 
+        shiftDates: shiftDates,
+        employeeName: currentEmpName,
+        saturdayData: saturdayData,
+        timeData: {}
+      });
+    }
+
+    function updateTotalHours() {
+      let totalOvertimeHours = 0;
+      let totalWorkHours = 0;
+      
+      document.querySelectorAll('#recordBody tr').forEach(row => {
+        const overtimeHours = parseFloat(row.querySelector('.overtime-hours').value) || 0;
+        const workHours = parseFloat(row.querySelector('.hours-column').textContent.trim()) || 0;
+        
+        totalOvertimeHours += overtimeHours;
+        totalWorkHours += workHours;
+      });
+      
+      document.getElementById('totalOvertimeHours').textContent = totalOvertimeHours.toFixed(1);
+      document.getElementById('totalWorkHours').textContent = totalWorkHours.toFixed(1);
+    }
+
+    function formatCurrency(amount) {
+      if (!amount) return '0';
+      return amount.toLocaleString('zh-TW');
+    }
+    function saveData() {
+      const empId = document.getElementById('empId').value.trim();
+      if (!empId) {
+        alert('請輸入員工編號');
+        return;
+      }
+
+      // 獲取當前活動的標籤頁
+      const activeTab = document.querySelector('.tab-content.active').id;
+      
+      // 根據當前標籤頁獲取對應的儲存狀態元素
+      const saveStatus = document.getElementById(
+        activeTab === 'attendanceTab' ? 'attendanceSaveStatus' : 'overtimeSaveStatus'
+      );
+      
+      // 禁用儲存按鈕
+      const saveBtn = saveStatus.previousElementSibling;
+      saveBtn.disabled = true;
+      saveBtn.style.backgroundColor = '#ccc';
+
+      // 顯示儲存中狀態
+      saveStatus.textContent = '儲存中...';
+      saveStatus.className = 'save-status show saving';
+
+      try {
+        // 初始化表單數據結構
+        const formData = {
+          activeTab: activeTab,
+          attendance: [],
+          overtime: {
+            employeeName: currentEmpName,
+            shiftDates: {},
+            saturdayData: [],
+            timeData: {},
+            totalAllowance: 0,
+            columnData: {
+              AA: 0,  // 小夜全天數
+              AB: '', // 小夜全日期
+              AC: 0,  // 大夜(8+4)天數
+              AD: '', // 大夜(8+4)日期
+              AE: '', // 大夜(8+4)時間
+              AF: 0,  // 大夜(10+2)天數
+              AG: '', // 大夜(10+2)日期
+              AH: ''  // 大夜(10+2)時間
+            }
+          }
+        };
+
+        // 收集打卡記錄數據
+        const rows = document.querySelectorAll('#recordBody tr');
+        rows.forEach(row => {
+          // 安全地獲取所有必要的元素
+          const workTypeSelect = row.querySelector('.work-type');
+          const statusSelect = row.querySelector('.status-type');
+          const overtimeHoursInput = row.querySelector('.overtime-hours');
+          const leaveHoursInput = row.querySelector('.leave-hours');
+          const compensationTypeSelect = row.querySelector('.compensation-type');
+
+          // 確保所有元素都存在
+          if (!workTypeSelect || !statusSelect || !overtimeHoursInput || !leaveHoursInput || !compensationTypeSelect) {
+            console.warn('某些必要的表單元素未找到');
+            return;
+          }
+
+          // 創建記錄對象
+          const record = {
+            date: row.cells[0].textContent,
+            workType: workTypeSelect.value,
+            status: statusSelect.value,
+            overtimeHours: overtimeHoursInput.value,
+            compensationType: compensationTypeSelect.value,
+            leaveHours: leaveHoursInput.value,
+            // 使用顯示在畫面上的實際值，而不是 dataset
+            actualTimeCode: row.cells[11].textContent || '',    // AB欄
+            actualStartTime: row.cells[12].textContent || '',  // AC欄
+            actualEndTime: row.cells[13].textContent || '',    // AD欄
+            actualHours: row.cells[14].textContent || ''      // AE欄
+          };
+
+          formData.attendance.push(record);
+
+          // 處理加班費相關數據
+          if (record.workType && record.compensationType === '加班費') {
+            const day = record.date.split('-')[2];
+            
+            if (record.workType === '週六(休假日)' && row.cells[1].textContent === '六') {
+              const weekIndex = Math.floor((parseInt(day) - 1) / 7);
+              if (weekIndex >= 0 && weekIndex < 5) {
+                formData.overtime.saturdayData[weekIndex] = {
+                  date: day,
+                  time: ''
+                };
+              }
+            } else if (ALLOWANCE_RATES[record.workType]) {
+              if (!formData.overtime.shiftDates[record.workType]) {
+                formData.overtime.shiftDates[record.workType] = [];
+              }
+              if (!formData.overtime.shiftDates[record.workType].includes(day)) {
+                formData.overtime.shiftDates[record.workType].push(day);
+              }
+            }
+          }
+        });
+
+        // 如果是加班費申請單頁面，收集額外數據
+        if (activeTab === 'overtimeTab') {
+          const overtimeRows = document.querySelectorAll('#overtimeBody tr');
+          overtimeRows.forEach(row => {
+            const cells = row.cells;
+            if (!cells || cells.length < 3) return;
+
+            const shiftType = cells[0].textContent;
+            const fieldType = cells[1].textContent;
+            const valueCell = cells[2];
+
+            // 處理特定班別的數據
+            if (shiftType === '小夜全') {
+              if (fieldType === '天數') {
+                formData.overtime.columnData.AA = parseInt(valueCell.textContent) || 0;
+              } else if (fieldType === '日期') {
+                formData.overtime.columnData.AB = valueCell.textContent.trim();
+              }
+            } else if (shiftType === '大夜(8+4)') {
+              if (fieldType === '天數') {
+                formData.overtime.columnData.AC = parseInt(valueCell.textContent) || 0;
+              } else if (fieldType === '日期') {
+                formData.overtime.columnData.AD = valueCell.textContent.trim();
+              } else if (fieldType === '時間') {
+                formData.overtime.columnData.AE = valueCell.querySelector('input')?.value || '';
+              }
+            } else if (shiftType === '大夜(10+2)') {
+              if (fieldType === '天數') {
+                formData.overtime.columnData.AF = parseInt(valueCell.textContent) || 0;
+              } else if (fieldType === '日期') {
+                formData.overtime.columnData.AG = valueCell.textContent.trim();
+              } else if (fieldType === '時間') {
+                formData.overtime.columnData.AH = valueCell.querySelector('input')?.value || '';
+              }
+            }
+
+            // 收集時間資料
+            if (['小夜半', '小小班', '小夜全', '大夜(8+4)', '大夜(10+2)'].includes(shiftType)) {
+              const timeInput = valueCell.querySelector('input');
+              if (timeInput && fieldType === '時間') {
+                formData.overtime.timeData[shiftType] = timeInput.value;
+              }
+            }
+
+            // 收集週六資料
+            if (shiftType === '週六(休假日)') {
+              const weekMatch = fieldType.match(/第(\d+)週/);
+              if (weekMatch) {
+                const weekNum = parseInt(weekMatch[1]) - 1;
+                const inputs = valueCell.querySelectorAll('input');
+                if (inputs?.length === 2 && weekNum >= 0 && weekNum < 5) {
+                  formData.overtime.saturdayData[weekNum] = {
+                    date: inputs[0].value,
+                    time: inputs[1].value
+                  };
+                }
+              }
+            }
+          });
+        }
+
+        // 調用後端保存數據
+        google.script.run
+          .withSuccessHandler(function(response) {
+            saveStatus.textContent = '儲存成功';
+            saveStatus.className = 'save-status show success';
+            saveBtn.disabled = false;
+            saveBtn.style.backgroundColor = '#FFD700';
+
+            setTimeout(() => {
+              saveStatus.className = 'save-status';
+            }, 3000);
+
+            // 更新顯示
+            if (response && response.overtime) {
+              // 保存時間資料到 response 中
+              response.overtime.timeData = formData.overtime.timeData;
+              displayOvertimeData(response.overtime);
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('儲存失敗:', error);
+            saveStatus.textContent = `儲存失敗: ${error.message}`;
+            saveStatus.className = 'save-status show error';
+            saveBtn.disabled = false;
+            saveBtn.style.backgroundColor = '#FFD700';
+
+            setTimeout(() => {
+              saveStatus.className = 'save-status';
+            }, 5000);
+          })
+          .saveEmployeeData(empId, formData);
+
+      } catch (error) {
+        console.error('準備資料時發生錯誤:', error);
+        saveStatus.textContent = `錯誤: ${error.message}`;
+        saveStatus.className = 'save-status show error';
+        saveBtn.disabled = false;
+        saveBtn.style.backgroundColor = '#FFD700';
+      }
+    }
+
+    function displaySchedule(data) {
+      console.log('開始處理說明數據');
+      console.log('原始數據:', data);
+      const tbody = document.getElementById('scheduleBody');
+      tbody.innerHTML = '';
+      
+      if (!data || data.length === 0) {
+        console.log('數據為空');
+        tbody.innerHTML = '<tr><td colspan="6">無法獲取說明數據</td></tr>';
+        return;
+      }
+      
+      // 跳過第一行（表頭），使用剩餘的所有數據
+      const rows = data.slice(1);
+      console.log('處理後的數據:', rows);
+      
+      rows.forEach((row, index) => {
+        console.log(`處理第 ${index + 1} 行:`, row);
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;  // 保留空白儲存格
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      console.log('數據處理完成');
+    }
+
+    // 計算總天數
+    function calculateTotalDays(shiftDates) {
+      return Object.values(shiftDates)
+        .reduce((total, dates) => total + dates.length, 0);
+    }
+    
+    // 計算總金額
+    function calculateTotalAllowance(shiftDates) {
+      const rates = {
+        '夜診18:00-21:00': 400,
+        '夜診18:00-21:30': 400,
+        '夜診18:00-22:00': 400,
+        '小夜半': 300,
+        '小小班': 300,
+        '小夜全': 600,
+        '大夜(8+4)': 700,
+        '大夜(10+2)': 800
+      };
+      
+      return Object.entries(shiftDates)
+        .reduce((total, [shiftType, dates]) => {
+          return total + (dates.length * (rates[shiftType] || 0));
+        }, 0);
+    }
+  </script>
+</body>
+</html>
