@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>員工假卡填寫</title>
+    <script>
+        function loadEmployeeRecords() {
+            var employeeId = document.getElementById("employeeId").value;
+            google.script.run.withSuccessHandler(displayRecords).getEmployeeRecords(employeeId);
+        }
+
+        function displayRecords(records) {
+            var table = document.getElementById("recordsTable");
+            table.innerHTML = "<tr><th>刷卡日期</th><th>班別/工作說明</th><th>加班時數</th><th>加班補償類型</th><th>請假時數</th></tr>";
+            
+            records.forEach(function(record, index) {
+                var row = table.insertRow(-1);
+                row.insertCell(0).innerText = record.刷卡日期;
+                row.insertCell(1).innerHTML = `<input type="text" id="workType_${index}" value="${record.班別工作備註 || ''}">`;
+                row.insertCell(2).innerHTML = `<input type="number" id="overtimeHours_${index}" value="${record.加班時數 || 0}" step="0.5">`;
+                row.insertCell(3).innerHTML = `
+                    <select id="overtimeType_${index}">
+                        <option value="加班費" ${record.加班補償類型 === '加班費' ? 'selected' : ''}>加班費</option>
+                        <option value="補休" ${record.加班補償類型 === '補休' ? 'selected' : ''}>補休</option>
+                    </select>
+                `;
+                row.insertCell(4).innerHTML = `<input type="number" id="leaveHours_${index}" value="${record.請假時數 || 0}" step="0.5">`;
+            });
+        }
+
+        function submitWorkStatus() {
+            var employeeId = document.getElementById("employeeId").value;
+            var table = document.getElementById("recordsTable");
+            var data = [];
+
+            for (var i = 1; i < table.rows.length; i++) {
+                data.push({
+                    row: i + 1,
+                    班別工作備註: document.getElementById(`workType_${i-1}`).value,
+                    加班時數: document.getElementById(`overtimeHours_${i-1}`).value,
+                    加班補償類型: document.getElementById(`overtimeType_${i-1}`).value,
+                    請假時數: document.getElementById(`leaveHours_${i-1}`).value
+                });
+            }
+
+            google.script.run.withSuccessHandler(alert).saveWorkStatus(data);
+        }
+    </script>
+</head>
+<body>
+    <h2>員工假卡填寫</h2>
+    <label>員工編號：</label>
+    <input type="text" id="employeeId">
+    <button onclick="loadEmployeeRecords()">查詢</button>
+    <br><br>
+
+    <table border="1" id="recordsTable"></table>
+    <br>
+    <button onclick="submitWorkStatus()">提交</button>
+</body>
+</html>
